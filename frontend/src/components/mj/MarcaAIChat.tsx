@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, X, Send, ShieldCheck, User, Crown } from "lucide-react";
+import { Sparkles, X, Send, ShieldCheck, Users, Briefcase, Info } from "lucide-react";
 import { API } from "@/lib/mjApi";
 import { mascotFor } from "@/lib/mascots";
 import { CertificateVerificationCard } from "./CertificateVerificationCard";
+import logo from "@/assets/marca_logo.jpg";
 
 type Msg = {
   id: string;
@@ -16,18 +17,43 @@ type Msg = {
 
 const SUGGESTIONS = [
   "Verify your certificate here",
-  "Want to know more about Marca Rise?",
-  "Do you know who the CEO of Marca Rise is?",
-  "Talk with MJ",
-  "Have a certificate? I can verify it.",
+  "Get to know more about Marca Rise",
+  "Do you know who the founders of Marca Rise are?",
+  "Meet the founders",
+  "Check your internship certificate",
 ];
 
 const QUICK_ACTIONS = [
   { icon: ShieldCheck, label: "Verify Certificate", prompt: "I want to verify a certificate" },
-  { icon: Sparkles, label: "About Marca Rise", prompt: "Tell me about Marca Rise" },
-  { icon: Crown, label: "Meet the CEO", prompt: "Who is the CEO of Marca Rise?" },
-  { icon: User, label: "Talk with MJ", prompt: "Hi MJ! What can you help me with?" },
+  { icon: Briefcase, label: "Services Provided by Marca Rise", prompt: "What services does Marca Rise offer?" },
+  { icon: Users, label: "Meet Founder", prompt: "Who are the founders of Marca Rise?" },
+  { icon: Info, label: "About Marca Rise", prompt: "Tell me about Marca Rise" },
 ];
+
+const WELCOME =
+  "Hey! I'm MAJA — but Sam calls me MJ. ✦ I can help you verify your internship certificate, learn about Marca Rise, explore our services, or meet our founders.";
+
+const CERT_RE = /[A-Za-z0-9]+(?:-[A-Za-z0-9]+)+/;
+const URL_RE = /(https?:\/\/[^\s)]+)/g;
+
+function renderText(text: string) {
+  const parts = text.split(URL_RE);
+  return parts.map((p, i) =>
+    /^https?:\/\//.test(p) ? (
+      <a
+        key={i}
+        href={p}
+        target="_blank"
+        rel="noreferrer"
+        className="text-purple-600 underline font-semibold break-words hover:text-purple-800"
+      >
+        {p}
+      </a>
+    ) : (
+      <span key={i}>{p}</span>
+    )
+  );
+}
 
 const uid = () => Math.random().toString(36).slice(2);
 
@@ -40,9 +66,11 @@ export default function MarcaAIChat() {
   const [bubbleIdx, setBubbleIdx] = useState(0);
   const [showBubble, setShowBubble] = useState(false);
   const [lastCert, setLastCert] = useState<Record<string, string> | null>(null);
+  const [loadingText, setLoadingText] = useState("Thinking…");
 
   const sessionId = useRef(uid());
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // rotating suggestion bubbles (paused while chat open)
   useEffect(() => {
@@ -83,6 +111,11 @@ export default function MarcaAIChat() {
       setInput("");
       setLoading(true);
       setMascot("working");
+      setLoadingText(
+        CERT_RE.test(text) || /verify|certificate/i.test(text)
+          ? "Give me a moment — I'm checking that certificate…"
+          : "Thinking…"
+      );
 
       const history = messages.slice(-6).map((m) => ({ role: m.role, content: m.text }));
 
@@ -130,27 +163,39 @@ export default function MarcaAIChat() {
     [loading, messages, lastCert]
   );
 
-  const openChat = () => {
+  const openChat = useCallback(() => {
     setOpen(true);
-    if (messages.length === 0) {
-      setMessages([
-        {
-          id: uid(),
-          role: "assistant",
-          mascot: "hello",
-          text:
-            "Hi, I'm MJ — the Marca Rise AI Assistant. ✦ Ask me about Marca Rise, or send a Certificate ID (like MR26-FS-00128) and I'll verify it for you.",
-        },
-      ]);
-      setMascot("hello");
-    }
-  };
+    setMessages((m) => {
+      if (m.length === 0) {
+        return [{ id: uid(), role: "assistant", mascot: "hello", text: WELCOME }];
+      }
+      return m;
+    });
+    setMascot((prev) => prev);
+  }, []);
+
+  // external trigger (e.g. from the first-open popup CTA)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail || {};
+      openChat();
+      if (detail.prefill) setInput(detail.prefill);
+      setTimeout(() => inputRef.current?.focus(), 350);
+    };
+    window.addEventListener("mj:open", handler as EventListener);
+    return () => window.removeEventListener("mj:open", handler as EventListener);
+  }, [openChat]);
+
+  // focus input whenever panel opens
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 350);
+  }, [open]);
 
   return (
     <>
       {/* ================= FLOATING ICON ================= */}
       <div
-        className="fixed z-[99998] bottom-4 left-4 sm:bottom-6 sm:left-6 flex flex-col items-start gap-3"
+        className="fixed z-[99998] left-4 top-1/2 -translate-y-1/2 sm:top-auto sm:translate-y-0 sm:bottom-6 sm:left-6 flex flex-col items-start gap-3"
         style={{ pointerEvents: open ? "none" : "auto" }}
       >
         {/* suggestion bubble */}
@@ -206,14 +251,18 @@ export default function MarcaAIChat() {
                 animate={{ rotate: 360 }}
                 transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
               />
-              {/* core */}
+              {/* core with Marca Rise logo */}
               <motion.span
-                className="relative w-16 h-16 rounded-full flex items-center justify-center text-white shadow-[0_10px_30px_rgba(76,29,149,0.5)]"
-                style={{ background: "linear-gradient(135deg,#6D28D9,#4C1D95)" }}
+                className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden shadow-[0_10px_30px_rgba(76,29,149,0.5)]"
+                style={{ background: "#0B0B0D" }}
                 animate={{ y: [0, -5, 0] }}
                 transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
               >
-                <Sparkles size={26} className="drop-shadow" />
+                <img
+                  src={logo}
+                  alt="Marca Rise"
+                  className="w-full h-full object-cover"
+                />
                 <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-400 border-2 border-white" />
               </motion.span>
             </motion.button>
@@ -311,6 +360,7 @@ export default function MarcaAIChat() {
                     className="w-8 h-8 rounded-full object-cover"
                   />
                   <div className="rounded-2xl rounded-bl-sm bg-white border border-purple-100 px-4 py-3 shadow-sm">
+                    <div className="text-xs text-slate-500 mb-1.5">{loadingText}</div>
                     <div className="flex items-center gap-1.5">
                       {[0, 1, 2].map((i) => (
                         <motion.span
@@ -335,6 +385,7 @@ export default function MarcaAIChat() {
               className="flex items-center gap-2 border-t border-purple-100 bg-white/90 px-3 py-3"
             >
               <input
+                ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask MJ or paste a Certificate ID…"
@@ -390,7 +441,7 @@ function MessageRow({ m }: { m: Msg }) {
                 : undefined
             }
           >
-            {m.text}
+            {renderText(m.text)}
           </div>
         )}
         {m.certificate !== undefined && m.certStatus && (

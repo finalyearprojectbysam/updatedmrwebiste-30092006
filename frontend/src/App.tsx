@@ -19,6 +19,7 @@ import { PageTransition } from "@/components/PageTransition";
 
 import CalendlyCard from "./components/CalendlyCard";
 import MarcaAIChat from "./components/mj/MarcaAIChat";
+import CertificatePopup from "./components/mj/CertificatePopup";
 import Admin from "@/pages/Admin";
 
 const queryClient = new QueryClient();
@@ -76,6 +77,8 @@ function App() {
           <CalendlyCard />
 
           <MarcaAIChat />
+
+          <CertificatePopup />
 
         </WouterRouter>
 
