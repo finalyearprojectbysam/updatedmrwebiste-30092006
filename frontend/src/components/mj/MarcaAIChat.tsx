@@ -199,7 +199,7 @@ export default function MarcaAIChat() {
         style={{ pointerEvents: open ? "none" : "auto" }}
       >
         {/* suggestion bubble — absolutely anchored to the icon, does NOT affect its position */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {showBubble && !open && (
             <motion.button
               key={bubbleIdx}
