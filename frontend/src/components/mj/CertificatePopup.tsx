@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ShieldCheck, ArrowRight } from "lucide-react";
 import mjHello from "@/assets/MJ_MOSCOT/MJ_HELLO.png";
@@ -13,12 +14,16 @@ const STEPS = [
 
 export default function CertificatePopup() {
   const [open, setOpen] = useState(false);
+  const [location] = useLocation();
 
   useEffect(() => {
     if (sessionStorage.getItem(SESSION_KEY)) return;
     const t = setTimeout(() => setOpen(true), 1400);
     return () => clearTimeout(t);
   }, []);
+
+  // Public-website only — never over the admin panel
+  if (location.startsWith("/admin")) return null;
 
   const dismiss = () => {
     sessionStorage.setItem(SESSION_KEY, "1");

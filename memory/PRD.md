@@ -30,12 +30,21 @@ Integrate a futuristic floating AI chatbot (MJ), certificate verification, and a
 - Seed certificates: MR26-FS-00128 (active), MR26-UX-00092 (revoked), MR26-WD-00210 (active).
 - Testing: 21/21 backend pytest passed; all frontend flows passed (chatbot verify, LLM answer, admin login, table, Excel import). No secret leakage.
 
+### Iteration 2 (Jun 2026)
+- First-open **certificate popup** (once per session via sessionStorage; gated off `/admin`); CTA opens MJ and prefills "VERIFY ".
+- Mobile chatbot moved to **left-middle** (desktop stays bottom-left); no overlap with Book a call.
+- Launcher icon replaced with circular **Marca Rise logo** (marca_logo.jpg).
+- Quick actions: Verify Certificate / Services Provided by Marca Rise / Meet Founder / About Marca Rise (removed "Talk with MJ" and "Meet CEO").
+- MJ identity: MJ = MAJA, owner Sam; founder answers include real LinkedIn URLs (princesamuel69, sanjay-sid) rendered clickable; no-markdown persona rule.
+- Admin credentials changed to saxluyz@gmail.com / 1234.
+- Testing: 24/24 backend pytest passed; all iteration-2 frontend flows passed.
+
 ## Environment Variables
 - Backend `.env`: MONGO_URL, DB_NAME, CORS_ORIGINS, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD, EMERGENT_LLM_KEY.
 - Frontend `.env`: REACT_APP_BACKEND_URL, REACT_APP_CALENDLY_URL, REACT_APP_LINKEDIN_URL.
 
 ## Admin
-- URL `/admin` — admin@marcarise.in / MarcaRise@2026 (change via backend `.env` ADMIN_PASSWORD; re-seeds on restart). Not linked in navbar/footer.
+- URL `/admin` — saxluyz@gmail.com / 1234 (change via backend `.env` ADMIN_PASSWORD; re-seeds on restart). Not linked in navbar/footer.
 
 ## Backlog
 ### P1

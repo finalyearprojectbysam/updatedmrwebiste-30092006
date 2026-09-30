@@ -14,8 +14,8 @@ if not BASE_URL:
             BASE_URL = line.split("=", 1)[1].strip().rstrip("/")
 
 API = f"{BASE_URL}/api"
-ADMIN_EMAIL = "admin@marcarise.in"
-ADMIN_PASSWORD = "MarcaRise@2026"
+ADMIN_EMAIL = "saxluyz@gmail.com"
+ADMIN_PASSWORD = "1234"
 SAMPLE_XLSX = "/app/sample_certificates.xlsx"
 
 
@@ -136,6 +136,49 @@ class TestChatVerification:
         assert d["type"] == "text"
         # Should reference CRM
         assert "crm" in d.get("reply", "").lower()
+
+
+# ---------- Iteration 2: MJ identity, founders, services ----------
+class TestMJPersona:
+    def test_mj_identity_and_owner(self):
+        r = requests.post(f"{API}/chat", json={"message": "What is the full form of MJ and who is your owner?"}, timeout=60)
+        assert r.status_code == 200
+        d = r.json()
+        assert d["type"] == "text"
+        reply = d.get("reply", "")
+        assert "MAJA" in reply
+        assert "Sam" in reply
+        assert "**" not in reply
+
+    def test_founders_with_linkedin_urls(self):
+        r = requests.post(f"{API}/chat", json={"message": "Who are the founders of Marca Rise?"}, timeout=60)
+        assert r.status_code == 200
+        d = r.json()
+        reply = d.get("reply", "")
+        assert "Sam" in reply
+        assert "Sanjay" in reply
+        assert "Co-Founder" in reply or "co-founder" in reply.lower()
+        assert "CEO" in reply
+        assert "COO" in reply
+        assert "https://www.linkedin.com/in/princesamuel69/" in reply
+        assert "https://www.linkedin.com/in/sanjay-sid/" in reply
+        assert "**" not in reply
+
+    def test_services_list(self):
+        r = requests.post(f"{API}/chat", json={"message": "What services does Marca Rise offer?"}, timeout=60)
+        assert r.status_code == 200
+        reply = r.json().get("reply", "").lower()
+        # Real services from KB
+        expected = [
+            "social media",
+            "short form",
+            "branding",
+            "web design",
+            "ui/ux",
+            "content strategy",
+        ]
+        for term in expected:
+            assert term in reply, f"missing '{term}' in reply: {reply[:400]}"
 
 
 # ---------- Excel import + verify ----------
