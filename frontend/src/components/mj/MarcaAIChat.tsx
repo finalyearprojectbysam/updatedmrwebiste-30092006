@@ -193,32 +193,33 @@ export default function MarcaAIChat() {
 
   return (
     <>
-      {/* ================= FLOATING ICON ================= */}
+      {/* ================= FLOATING ICON (fixed anchor; icon never moves) ================= */}
       <div
-        className="fixed z-[99998] left-4 top-1/2 -translate-y-1/2 sm:top-auto sm:translate-y-0 sm:bottom-6 sm:left-6 flex flex-col items-start gap-3"
+        className="fixed z-[99998] w-16 h-16 left-4 top-[75vh] -translate-y-1/2 sm:left-6 sm:top-auto sm:bottom-6 sm:translate-y-0"
         style={{ pointerEvents: open ? "none" : "auto" }}
       >
-        {/* suggestion bubble */}
+        {/* suggestion bubble — absolutely anchored to the icon, does NOT affect its position */}
         <AnimatePresence>
           {showBubble && !open && (
             <motion.button
               key={bubbleIdx}
-              initial={{ opacity: 0, y: 10, scale: 0.96 }}
+              initial={{ opacity: 0, y: -8, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.96 }}
-              transition={{ duration: 0.35 }}
+              exit={{ opacity: 0, y: -4, scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 300, damping: 24 }}
               onClick={openChat}
               data-testid="mj-suggestion-bubble"
-              className="relative ml-1 max-w-[240px] text-left rounded-2xl bg-white border border-purple-200 px-4 py-2.5 text-[13px] font-semibold text-slate-700 shadow-[0_10px_30px_rgba(124,12,231,0.18)]"
+              className="absolute left-0 top-full mt-3 sm:top-auto sm:bottom-full sm:mt-0 sm:mb-3 w-[280px] max-w-[calc(100vw-32px)] text-left rounded-2xl bg-white border border-purple-200 px-4 py-2.5 text-[13px] font-semibold text-slate-700"
               style={{ boxShadow: "0 0 0 1px rgba(168,85,247,0.15),0 10px 30px rgba(124,12,231,0.18)" }}
             >
               {SUGGESTIONS[bubbleIdx]}
-              <span className="absolute -bottom-1.5 left-6 w-3 h-3 rotate-45 bg-white border-b border-r border-purple-200" />
+              {/* arrow: points UP toward icon on mobile, DOWN on desktop */}
+              <span className="absolute left-6 w-3 h-3 rotate-45 bg-white -top-1.5 border-t border-l sm:top-auto sm:-bottom-1.5 sm:border-t-0 sm:border-l-0 sm:border-b sm:border-r border-purple-200" />
             </motion.button>
           )}
         </AnimatePresence>
 
-        {/* orb */}
+        {/* orb — fills the fixed wrapper */}
         <AnimatePresence>
           {!open && (
             <motion.button
@@ -230,7 +231,7 @@ export default function MarcaAIChat() {
               onClick={openChat}
               aria-label="Open MJ, the Marca Rise AI assistant"
               data-testid="mj-launcher"
-              className="relative w-16 h-16 rounded-full flex items-center justify-center"
+              className="absolute inset-0 w-16 h-16 rounded-full flex items-center justify-center"
               style={{ pointerEvents: "auto" }}
             >
               {/* pulsing glow */}
@@ -251,7 +252,7 @@ export default function MarcaAIChat() {
                 animate={{ rotate: 360 }}
                 transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
               />
-              {/* core with Marca Rise logo */}
+              {/* core with Marca Rise logo (subtle idle float only — position stays fixed) */}
               <motion.span
                 className="relative w-16 h-16 rounded-full flex items-center justify-center overflow-hidden shadow-[0_10px_30px_rgba(76,29,149,0.5)]"
                 style={{ background: "#0B0B0D" }}
